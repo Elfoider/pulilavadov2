@@ -58,3 +58,23 @@ export interface Service extends BaseEntity {
   status: ServiceStatus;
   observations?: string;
 }
+
+export type CashMovementType = "ingreso" | "gasto" | "pago servicio" | "propina";
+export type CashPaymentMethod = "efectivo" | "pago móvil" | "transferencia" | "punto de venta" | "zelle" | "otro";
+
+export interface CashOpeningForm {
+  initialAmount: number;
+  responsible: string;
+  observations?: string;
+}
+
+export interface CashMovement extends BaseEntity {
+  type: CashMovementType;
+  concept: string;
+  amount: number;
+  paymentMethod: CashPaymentMethod;
+  reference?: string;
+  observations?: string;
+  responsible: string;
+  happenedAt: string;
+}
