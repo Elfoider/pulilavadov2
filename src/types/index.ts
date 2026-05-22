@@ -21,6 +21,26 @@ export interface BaseEntity {
   updatedAt: string;
 }
 
+export type ServiceStatus = "pendiente" | "en proceso" | "terminado" | "cobrado";
+
+export type PaymentMethod = "efectivo" | "tarjeta" | "transferencia" | "mixto";
+
+export type VehicleType = "sedan" | "suv" | "pickup" | "moto" | "van";
+
+export interface Service extends BaseEntity {
+  client: string;
+  phone: string;
+  plate: string;
+  brandModel: string;
+  vehicleType: VehicleType;
+  serviceType: string;
+  price: number;
+  washer: string;
+  paymentMethod: PaymentMethod;
+  status: ServiceStatus;
+  observations?: string;
+}
+
 export interface Client extends BaseEntity {
   fullName: string;
   phone?: string;
@@ -32,10 +52,4 @@ export interface Vehicle extends BaseEntity {
   brand: string;
   model: string;
   clientId: string;
-}
-
-export interface Service extends BaseEntity {
-  name: string;
-  price: number;
-  durationMinutes?: number;
 }
