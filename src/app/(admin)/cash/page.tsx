@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CashMovement, CashOpeningForm } from "@/types";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { mockCashMovements, mockCashOpening } from "@/lib/mock/cash";
+import { getSharedCashMovements, onSharedCashUpdate } from "@/lib/mock/shared-cash";
 import { CashOpeningFormComponent } from "@/components/cash/cash-opening-form";
 import { CashMovementForm, CashMovementFormValues } from "@/components/cash/cash-movement-form";
 import { CashMovementsTable } from "@/components/cash/cash-movements-table";
@@ -26,7 +27,7 @@ export default function CashPage() {
     responsible: mockCashOpening.responsible,
     observations: mockCashOpening.observations,
   });
-  const [movements, setMovements] = useState<CashMovement[]>(mockCashMovements);
+  const [movements, setMovements] = useState<CashMovement[]>([...getSharedCashMovements(), ...mockCashMovements]);
   const [countedCash, setCountedCash] = useState<number>(0);
   const [inventorySales, setInventorySales] = useState<number>(0);
   const [movementForm, setMovementForm] = useState<CashMovementFormValues>(movementInitial);
@@ -35,11 +36,18 @@ export default function CashPage() {
     const ingresos = movements.filter((m) => m.type === "ingreso").reduce((a, b) => a + b.amount, 0);
     const gastos = movements.filter((m) => m.type === "gasto").reduce((a, b) => a + b.amount, 0);
     const servicios = movements.filter((m) => m.type === "pago servicio").reduce((a, b) => a + b.amount, 0);
+    const inventario = movements.filter((m) => m.type === "venta inventario").reduce((a, b) => a + b.amount, 0);
     const propinas = movements.filter((m) => m.type === "propina").reduce((a, b) => a + b.amount, 0);
-    const expectedCash = opening.initialAmount + ingresos + servicios + propinas - gastos;
-    const netProfit = ingresos + servicios + inventorySales - gastos;
-    return { ingresos, gastos, servicios, propinas, expectedCash, netProfit };
+    const expectedCash = opening.initialAmount + ingresos + servicios + inventario + propinas - gastos;
+    const netProfit = ingresos + servicios + inventario + inventorySales - gastos;
+    return { ingresos, gastos, servicios, inventario, propinas, expectedCash, netProfit };
   }, [movements, opening.initialAmount, inventorySales]);
+
+  useEffect(() => {
+    const sync = () => setMovements([...getSharedCashMovements(), ...mockCashMovements]);
+    sync();
+    return onSharedCashUpdate(sync);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -86,7 +94,7 @@ export default function CashPage() {
           <p>Ingresos: <strong>${totals.ingresos.toFixed(2)}</strong></p>
           <p>Gastos: <strong>${totals.gastos.toFixed(2)}</strong></p>
           <p>Ventas de servicios: <strong>${totals.servicios.toFixed(2)}</strong></p>
-          <p>Ventas de inventario: <input type="number" min={0} className="ml-2 w-28 rounded border px-2 py-1" value={inventorySales} onChange={(e) => setInventorySales(Number(e.target.value))} /></p>
+          <p>Ventas de inventario: <strong>${totals.inventario.toFixed(2)}</strong> <input type="number" min={0} className="ml-2 w-28 rounded border px-2 py-1" value={inventorySales} onChange={(e) => setInventorySales(Number(e.target.value))} /></p>
           <p>Propinas: <strong>${totals.propinas.toFixed(2)}</strong></p>
           <p>Efectivo esperado: <strong>${totals.expectedCash.toFixed(2)}</strong></p>
           <p>Efectivo contado: <input type="number" min={0} className="ml-2 w-28 rounded border px-2 py-1" value={countedCash} onChange={(e) => setCountedCash(Number(e.target.value))} /></p>

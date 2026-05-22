@@ -59,7 +59,7 @@ export interface Service extends BaseEntity {
   observations?: string;
 }
 
-export type CashMovementType = "ingreso" | "gasto" | "pago servicio" | "propina";
+export type CashMovementType = "ingreso" | "gasto" | "pago servicio" | "propina" | "venta inventario";
 export type CashPaymentMethod = "efectivo" | "pago móvil" | "transferencia" | "punto de venta" | "zelle" | "otro";
 
 export interface CashOpeningForm {
