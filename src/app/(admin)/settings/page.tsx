@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { loadSettings, saveSettings } from "@/lib/settings/settingsRepository";
 import { PageHeader } from "@/components/ui/page-header";
 
 type Tab = "negocio" | "servicios" | "pagos" | "categorias" | "caja" | "apariencia";
@@ -15,6 +16,9 @@ interface ServiceTypeSetting {
 
 export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>("negocio");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [business, setBusiness] = useState({
     name: "Pulilavado Express",
@@ -53,6 +57,35 @@ export default function SettingsPage() {
 
   const [appearance, setAppearance] = useState({ systemName: "Pulilavado Admin", primaryColor: "#0f172a", mode: "claro" as "claro" | "oscuro" });
 
+
+  useEffect(() => {
+    let mounted = true;
+    loadSettings<any>()
+      .then((data) => {
+        if (!mounted) return;
+        if (data.business) setBusiness((p) => ({ ...p, ...(data.business as any) }));
+        if (data.serviceTypes) setServiceTypes(data.serviceTypes as any);
+        if (data.paymentMethods) setPaymentMethods(data.paymentMethods as any);
+        if (data.categories) setCategories(data.categories as any);
+        if (data.cashSettings) setCashSettings((p) => ({ ...p, ...(data.cashSettings as any) }));
+        if (data.appearance) setAppearance((p) => ({ ...p, ...(data.appearance as any) }));
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+    return () => { mounted = false; };
+  }, []);
+
+  const handleSaveAll = async () => {
+    setError(null);
+    setSuccess(null);
+    try {
+      await saveSettings({ business, serviceTypes, paymentMethods, categories, cashSettings, appearance });
+      setSuccess("Configuración guardada correctamente.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo guardar.");
+    }
+  };
+
   const tabs: Array<{ key: Tab; label: string }> = [
     { key: "negocio", label: "Datos del negocio" },
     { key: "servicios", label: "Servicios y precios" },
@@ -62,8 +95,13 @@ export default function SettingsPage() {
     { key: "apariencia", label: "Apariencia" },
   ];
 
+  if (loading) return <div className="rounded-xl border bg-white p-4 text-sm">Cargando configuración...</div>;
+
   return <div className="space-y-6">
     <PageHeader title="Configuración" subtitle="Configura parámetros generales del sistema (mock/local)." />
+
+    {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
+    {success ? <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</div> : null}
 
     <div className="flex flex-wrap gap-2">{tabs.map(t => <button key={t.key} onClick={()=>setTab(t.key)} className={`rounded-lg px-3 py-2 text-sm ${tab===t.key?"bg-slate-900 text-white":"bg-white border text-slate-700"}`}>{t.label}</button>)}</div>
 
@@ -94,5 +132,6 @@ export default function SettingsPage() {
     </section>}
 
     {tab === "apariencia" && <section className="rounded-xl border bg-white p-4 grid gap-3 sm:grid-cols-2"><input className="rounded border px-3 py-2" placeholder="Nombre visible del sistema" value={appearance.systemName} onChange={e=>setAppearance({...appearance,systemName:e.target.value})} /><input type="color" className="h-10 w-full rounded border px-2 py-1" value={appearance.primaryColor} onChange={e=>setAppearance({...appearance,primaryColor:e.target.value})} /><select className="rounded border px-3 py-2" value={appearance.mode} onChange={e=>setAppearance({...appearance,mode:e.target.value as "claro"|"oscuro"})}><option value="claro">Modo claro</option><option value="oscuro">Modo oscuro</option></select><div className="rounded border p-3" style={{ borderColor: appearance.primaryColor }}><p className="font-medium">Vista previa</p><p className="text-sm">{appearance.systemName} · {appearance.mode}</p></div></section>}
+    <div className="flex justify-end"><button className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white" onClick={handleSaveAll}>Guardar configuración</button></div>
   </div>;
 }

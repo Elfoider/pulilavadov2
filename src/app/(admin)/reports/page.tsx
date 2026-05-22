@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { watchCashMovements } from "@/lib/cash/cashRepository";
+import { CashMovement } from "@/types";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { mockCashForReports, mockDailyClosure, ReportFilters, reportTypes } from "@/lib/mock/reports";
@@ -17,9 +19,34 @@ export default function ReportsPage() {
     serviceStatus: "all",
   });
 
+  const [cashRows, setCashRows] = useState<CashMovement[]>(mockCashForReports);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const unsub = watchCashMovements((rows) => {
+        setCashRows(rows.length ? rows : mockCashForReports);
+        setLoading(false);
+      });
+      if (loading) return <div className="rounded-xl border bg-white p-4 text-sm">Cargando reportes...</div>;
+
+  return () => unsub();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo cargar reportes");
+      setLoading(false);
+    }
+  }, []);
+
   const rows = useMemo(() => {
-    return mockCashForReports.filter((row) => (filters.paymentMethod === "all" ? true : row.paymentMethod === filters.paymentMethod));
-  }, [filters.paymentMethod]);
+    const filteredByPayment = cashRows.filter((row) => (filters.paymentMethod === "all" ? true : row.paymentMethod === filters.paymentMethod));
+    const start = new Date(filters.startDate);
+    const end = new Date(filters.endDate + "T23:59:59");
+    return filteredByPayment.filter((r) => {
+      const t = new Date(r.happenedAt);
+      return t >= start && t <= end;
+    });
+  }, [filters.paymentMethod, filters.startDate, filters.endDate, cashRows]);
 
   const summary = useMemo(() => {
     const ingresos = rows.filter((r) => ["ingreso", "pago servicio", "venta inventario"].includes(r.type)).reduce((a, b) => a + b.amount, 0);
@@ -81,8 +108,11 @@ export default function ReportsPage() {
     XLSX.writeFile(wb, `reporte-${filters.reportType}-${filters.startDate}.xlsx`);
   };
 
+  if (loading) return <div className="rounded-xl border bg-white p-4 text-sm">Cargando reportes...</div>;
+
   return (
     <div className="space-y-6">
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
       <PageHeader title="Reportes" subtitle="Panel administrativo de reportes con datos mock/locales." />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
@@ -122,6 +152,7 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody>
+            {rows.length === 0 ? <tr><td colSpan={6} className="px-3 py-6 text-center text-slate-500">Sin datos para los filtros seleccionados.</td></tr> : null}
             {rows.map((row) => (
               <tr key={row.id} className="border-t">
                 <td className="px-3 py-2">{new Date(row.happenedAt).toLocaleString("es-VE")}</td>

@@ -1,11 +1,12 @@
-// Placeholder for future Firestore collection helpers.
 export const collectionPaths = {
   services: "services",
   clients: "clients",
   vehicles: "vehicles",
   washers: "washers",
-  inventory: "inventory",
-  cash: "cash",
-  reports: "reports",
+  inventoryProducts: "inventoryProducts",
+  inventoryMovements: "inventoryMovements",
+  cashSessions: "cashSessions",
+  cashMovements: "cashMovements",
   settings: "settings",
+  reports: "reports",
 } as const;
