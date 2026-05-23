@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { loadSettings, saveSettings } from "@/lib/settings/settingsRepository";
 import { PageHeader } from "@/components/ui/page-header";
+import Link from "next/link";
 
 type Tab = "negocio" | "servicios" | "pagos" | "categorias" | "caja" | "apariencia";
 
@@ -100,7 +101,7 @@ export default function SettingsPage() {
   if (loading) return <div className="rounded-xl border bg-white p-4 text-sm">Cargando configuración...</div>;
 
   return <div className="space-y-6">
-    <PageHeader title="Configuración" subtitle="Configura parámetros generales del sistema (mock/local)." />
+    <div className="flex items-center justify-between gap-3"><PageHeader title="Configuración" subtitle="Configura parámetros generales del sistema (mock/local)." /><Link href="/settings/migration" className="rounded-lg bg-indigo-600 px-3 py-2 text-sm text-white">Migración de datos</Link></div>
     <div className="text-sm">Origen: {isLegacySettings ? "Viejo" : "Nuevo"}{isLegacySettings ? <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Dato antiguo</span> : null}</div>
 
     {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
