@@ -3,7 +3,7 @@ import { LegacyService, Service } from "@/types";
 export function adaptServiceDoc(id: string, data: Record<string, unknown>): Service {
   if (typeof data.client === "string" && typeof data.serviceType === "string") return { id, ...(data as Omit<Service, "id">) };
   const legacy = data as unknown as LegacyService;
-  return {
+  const result: Service = {
     id,
     clientId: `legacy-${id}`,
     vehicleId: `legacy-${id}`,
@@ -24,4 +24,6 @@ export function adaptServiceDoc(id: string, data: Record<string, unknown>): Serv
     legacy: true,
     rawData: data,
   };
+  if (process.env.NODE_ENV === "development") console.log("Legacy service adapted", result);
+  return result;
 }

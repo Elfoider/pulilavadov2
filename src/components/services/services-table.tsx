@@ -17,7 +17,7 @@ export function ServicesTable({ services, onEdit, onDelete, onStatusChange, onMa
       <table className="min-w-full text-sm">
         <thead className="bg-slate-50 text-left text-slate-600">
           <tr>
-            <th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Vehículo</th><th className="px-4 py-3">Servicio</th><th className="px-4 py-3">Precio</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Acciones</th>
+            <th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Vehículo</th><th className="px-4 py-3">Servicio</th><th className="px-4 py-3">Precio</th><th className="px-4 py-3">Estado</th><th className="px-4 py-3">Origen</th><th className="px-4 py-3">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -28,6 +28,7 @@ export function ServicesTable({ services, onEdit, onDelete, onStatusChange, onMa
               <td className="px-4 py-3">{service.serviceType}</td>
               <td className="px-4 py-3">${service.price.toFixed(2)}</td>
               <td className="px-4 py-3"><ServiceStatusBadge status={service.status} /></td>
+              <td className="px-4 py-3">{service.legacy ? "Viejo" : "Nuevo"}{service.legacy ? <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Dato antiguo</span> : null}</td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-2">
                   <select value={service.status} onChange={(e) => onStatusChange(service.id, e.target.value as ServiceStatus)} className="rounded border border-slate-300 px-2 py-1 text-xs">{statuses.map((status)=><option key={status} value={status}>{status}</option>)}</select>

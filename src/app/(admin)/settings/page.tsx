@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isLegacySettings, setIsLegacySettings] = useState(false);
 
   const [business, setBusiness] = useState({
     name: "Pulilavado Express",
@@ -63,6 +64,7 @@ export default function SettingsPage() {
     loadSettings<any>()
       .then((data) => {
         if (!mounted) return;
+        if ((data as any).legacy) setIsLegacySettings(true);
         if (data.business) setBusiness((p) => ({ ...p, ...(data.business as any) }));
         if (data.serviceTypes) setServiceTypes(data.serviceTypes as any);
         if (data.paymentMethods) setPaymentMethods(data.paymentMethods as any);
@@ -99,6 +101,7 @@ export default function SettingsPage() {
 
   return <div className="space-y-6">
     <PageHeader title="Configuración" subtitle="Configura parámetros generales del sistema (mock/local)." />
+    <div className="text-sm">Origen: {isLegacySettings ? "Viejo" : "Nuevo"}{isLegacySettings ? <span className="ml-2 rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Dato antiguo</span> : null}</div>
 
     {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
     {success ? <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</div> : null}

@@ -3,7 +3,7 @@ import { Client, LegacyClient } from "@/types";
 export function adaptClientDoc(id: string, data: Record<string, unknown>): Client {
   if (typeof data.fullName === "string") return { id, ...(data as Omit<Client, "id">) };
   const legacy = data as unknown as LegacyClient;
-  return {
+  const result: Client = {
     id,
     fullName: legacy.name ?? "Cliente legado",
     phone: legacy.phone ?? "",
@@ -16,4 +16,6 @@ export function adaptClientDoc(id: string, data: Record<string, unknown>): Clien
     legacy: true,
     rawData: data,
   };
+  if (process.env.NODE_ENV === "development") console.log("Legacy client adapted", result);
+  return result;
 }
