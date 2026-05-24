@@ -10,7 +10,7 @@ export async function createClient(input: Omit<Client, "id" | "createdAt" | "upd
 }
 
 export function watchClients(cb: (rows: Client[]) => void) {
-  return onSnapshot(query(collection(assertDb(), COLLECTION), orderBy("fullName", "asc")), (snapshot) => {
+  return onSnapshot(query(collection(assertDb(), COLLECTION), orderBy("name", "asc")), (snapshot) => {
     const adapted = snapshot.docs.map((doc) => {
       const adaptedClient = adaptClientDoc(doc.id, doc.data() as Record<string, unknown>);
       return adaptedClient;
