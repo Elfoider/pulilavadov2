@@ -6,7 +6,7 @@ export function ClientForm({ values, onChange, onSubmit, submitLabel, onCancel }
   const set = <K extends keyof ClientFormValues>(k: K, v: ClientFormValues[K]) => onChange({ ...values, [k]: v });
   return <form className="grid gap-3" onSubmit={(e)=>{e.preventDefault();onSubmit();}}>
     <div className="grid gap-3 sm:grid-cols-2">
-      <input className="rounded-lg border px-3 py-2" placeholder="Nombre" value={values.fullName} onChange={(e)=>set("fullName", e.target.value)} required/>
+      <input className="rounded-lg border px-3 py-2" placeholder="Nombre" value={values.fullName} onChange={(e)=>set("fullName", e.target.value)} />
       <input className="rounded-lg border px-3 py-2" placeholder="Teléfono" value={values.phone} onChange={(e)=>set("phone", e.target.value)} required/>
       <input className="rounded-lg border px-3 py-2" placeholder="Cédula / RIF" value={values.documentId} onChange={(e)=>set("documentId", e.target.value)} required/>
       <input className="rounded-lg border px-3 py-2" placeholder="Dirección (opcional)" value={values.address ?? ""} onChange={(e)=>set("address", e.target.value)}/>
